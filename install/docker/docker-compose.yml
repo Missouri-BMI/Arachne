@@ -1,9 +1,8 @@
-version: '3'
 services:
-
   # Application Postgres Database
   arachne-datanode-postgres:
     image: postgres:15.5-alpine
+    platform: linux/amd64
     pull_policy: always
     container_name: arachne-datanode-postgres
     restart: always
@@ -17,10 +16,10 @@ services:
       - "127.0.0.1:5434:5432" # Port mapping (host:container)
     volumes:
       - arachne-pg-data:/var/lib/postgresql/data # Volume mount for Arachne PG data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Initialization script
     environment:
       POSTGRES_USER: ohdsi-user
       POSTGRES_PASSWORD: ohdsi-password
-      POSTGRES_DB: arachne_datanode
 
   # Execution Engine
   arachne-execution-engine:
@@ -47,6 +46,24 @@ services:
       - RUNTIMESERVICE_DIST_ARCHIVEFOLDER=/runtimes/
       - RUNTIMESERVICE_DIST_DEFAULTDESCRIPTORFILE=descriptor_base.json
 
+    # Arachne Central (Community Edition)
+  arachne-central:
+    image: odysseusinc/arachne-central-ce:latest
+    platform: linux/amd64
+    container_name: arachne-central
+    pull_policy: always
+    restart: always
+    networks:
+      - arachne-network
+    env_file:
+      - central.env  # Environment variables file
+    ports:
+      - "127.0.0.1:8080:8080"  # Localhost port 8443 maps to internal port 8443
+      - "127.0.0.1:8983:8983"  # Localhost port 8983 maps to internal port 8983
+    depends_on:
+      - arachne-datanode-postgres
+
+
   # Arachne Datanode Service
   arachne-datanode:
     image: odysseusinc/arachne-datanode-ce:latest
@@ -57,7 +74,7 @@ services:
     networks:
       - arachne-network
     ports:
-      - "8080:8080" # Port mapping (host:container)
+      - "8880:8880" # Port mapping (host:container)
     volumes:
       - arachne-datanode-files:/var/arachne/files  # Volume mount for Arachne data
     env_file:
@@ -65,11 +82,30 @@ services:
     depends_on:
       - arachne-datanode-postgres
       - arachne-execution-engine
+      - arachne-central
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    platform: linux/amd64
+    pull_policy: always
+    networks:
+      - arachne-network
+    ports:
+      - "127.0.0.1:5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - arachne-datanode-postgres
 
 # Volumes for the services
 volumes:
   arachne-pg-data:
   arachne-datanode-files:
+  pgadmin-data:
 
 # Network definition
 networks:
