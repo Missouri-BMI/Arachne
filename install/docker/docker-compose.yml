@@ -13,7 +13,7 @@ services:
     networks:
       - arachne-network
     ports:
-      - "127.0.0.1:5434:5432" # Port mapping (host:container)
+      - "5432:5432" # Port mapping (host:container)
     volumes:
       - arachne-pg-data:/var/lib/postgresql/data # Volume mount for Arachne PG data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Initialization script
