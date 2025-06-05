@@ -1,38 +1,82 @@
-version: '3'
 services:
+  arachne-central:
+    image: odysseusinc/arachne-central-ce:latest
+    platform: linux/amd64
+    container_name: arachne-central
+    # pull_policy: always
+    # restart: always
+    networks:
+      - arachne-network
+    env_file:
+      - central.env  # Environment variables file
+    ports:
+      - "8080:8080"  # Localhost port 8080 maps to internal port 8080
+      - "8983:8983"  # Localhost port 8983 maps to internal port 8983
+    depends_on:
+      - ohdsi-postgres
 
-  # Application Postgres Database
-  arachne-datanode-postgres:
-    image: postgres:15.5-alpine
-    pull_policy: always
-    container_name: arachne-datanode-postgres
-    restart: always
-    logging:
-      options:
-        max-size: 100m
-    shm_size: "4g"
+
+  # Arachne Datanode Service
+  arachne-datanode:
+    image: odysseusinc/arachne-datanode-ce:latest
+    # pull_policy: always
+    container_name: arachne-datanode
+    platform: linux/amd64
+    # restart: always
     networks:
       - arachne-network
     ports:
-      - "127.0.0.1:5434:5432" # Port mapping (host:container)
+      - "8881:8880" # Port mapping (host:container)
     volumes:
-      - arachne-pg-data:/var/lib/postgresql/data # Volume mount for Arachne PG data
+      - arachne-datanode-files:/var/arachne/files  # Volume mount for Arachne data
+    env_file:
+      - datanode.env  # Environment variables file
+    depends_on:
+      - ohdsi-postgres
+      - arachne-execution-engine
+      - arachne-central
+
+
+  # # WebAPI Service
+  # webapi:
+  #   image: ohdsi/webapi:latest
+  #   container_name: webapi
+  #   # restart: always
+  #   env_file:
+  #     - webapi.env  # Environment variables file
+  #   depends_on:
+  #     - ohdsi-postgres
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - arachne-network
+
+  # ATLAS Service
+  atlas:
+    image: ohdsi/atlas:latest
+    container_name: atlas
+    # restart: always
     environment:
-      POSTGRES_USER: ohdsi-user
-      POSTGRES_PASSWORD: ohdsi-password
-      POSTGRES_DB: arachne_datanode
+      - WEBAPI_URL=http://webapi:8080/WebAPI
+    # depends_on:
+    #   - webapi
+    ports:
+      - "80:8080"
+    networks:
+      - arachne-network
 
   # Execution Engine
   arachne-execution-engine:
     image: odysseusinc/execution_engine:2.7.1
-    pull_policy: always
+    # pull_policy: always
     platform: linux/amd64
     container_name: arachne-execution-engine
-    restart: always
+    # restart: always
     networks:
       - arachne-network
     ports:
-      - "127.0.0.1:8888:8888"  # Port mapping (host:container)
+      - "8888:8888"  # Port mapping (host:container)
+      - "9999:9999"  # Port mapping (host:container)
     volumes:
       - /tmp:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
@@ -46,30 +90,70 @@ services:
       - RUNTIMESERVICE_DIST_VERBOSE_LOG=true
       - RUNTIMESERVICE_DIST_ARCHIVEFOLDER=/runtimes/
       - RUNTIMESERVICE_DIST_DEFAULTDESCRIPTORFILE=descriptor_base.json
+    env_file:
+      - query-exec.env  # Environment variables file
+    # Arachne Central (Community Edition)
 
-  # Arachne Datanode Service
-  arachne-datanode:
-    image: odysseusinc/arachne-datanode-ce:latest
-    pull_policy: always
-    container_name: arachne-datanode
+
+  ares:
+    build:
+      context: ../../../Ares
+      dockerfile: Dockerfile
+    image: ohdsi-ares
+    container_name: ohdsi-ares
+    ports:
+      - "8082:80"
+    volumes:
+      - ./ares_data:/usr/share/nginx/html/ares/data
+    networks:
+      - arachne-network
+    # restart: unless-stopped
+
+
+  # Application Postgres Database
+  ohdsi-postgres:
+    image: postgres:15.5-alpine
     platform: linux/amd64
+    # pull_policy: always
+    container_name: ohdsi-postgres
     restart: always
+    logging:
+      options:
+        max-size: 100m
+    shm_size: "16g"
     networks:
       - arachne-network
     ports:
-      - "8080:8080" # Port mapping (host:container)
+      - "5432:5432" # Port mapping (host:container)
     volumes:
-      - arachne-datanode-files:/var/arachne/files  # Volume mount for Arachne data
-    env_file:
-      - datanode.env  # Environment variables file
+      - arachne-pg-data:/var/lib/postgresql/data # Volume mount for Arachne PG data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # Initialization script
+    environment:
+      POSTGRES_USER: ohdsi-user
+      POSTGRES_PASSWORD: ohdsi-password
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    platform: linux/amd64
+    # pull_policy: always
+    networks:
+      - arachne-network
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
     depends_on:
-      - arachne-datanode-postgres
-      - arachne-execution-engine
+      - ohdsi-postgres
 
 # Volumes for the services
 volumes:
   arachne-pg-data:
   arachne-datanode-files:
+  pgadmin-data:
 
 # Network definition
 networks:

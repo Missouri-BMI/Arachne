@@ -21,7 +21,9 @@ docker compose -d up
 - Username: admin
 - Password: ohdsi
    
-
+-- central
+ admin@...
+ password
 
 
 
