@@ -38,11 +38,11 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 populationSize <- 100
 
 simulatedSources <- list(
-  list(abbreviation="MU", sourceName="University of Missouri", geographySpecification="Missouri", population=populationSize)
-#   list(abbreviation="KUMC", sourceName="University of Kansas Medical Center", geographySpecification="Kansas", population=1000),
-#   list(abbreviation="WASHU", sourceName="Washington University in St. Louis", geographySpecification="Missouri", population=1000)
-#   list(abbreviation="MCW", sourceName="Medical College of Wisconsin", geographySpecification="Wisconsin", population=populationSize),
-#   list(abbreviation="UIOWA", sourceName="University of Iowa", geographySpecification="Iowa", population=populationSize) 
+  list(abbreviation="MU", sourceName="University of Missouri", geographySpecification="Missouri", population=200),
+  list(abbreviation="KUMC", sourceName="University of Kansas Medical Center", geographySpecification="Kansas", population=500),
+  list(abbreviation="WASHU", sourceName="Washington University in St. Louis", geographySpecification="Missouri", population=490),
+  list(abbreviation="MCW", sourceName="Medical College of Wisconsin", geographySpecification="Wisconsin", population=300),
+  list(abbreviation="UIOWA", sourceName="University of Iowa", geographySpecification="Iowa", population=200) 
 )
 
 
@@ -163,8 +163,8 @@ for (simulatedSource in simulatedSources) {
     connectionDetails = connectionDetails,
     cdmDatabaseSchema = cdmDatabaseSchema,
     resultsDatabaseSchema = resultsDatabaseSchema,
-    vocabDatabaseSchema = vocabDatabaseSchema,
-    outputPath = aresDataDirectory,
+    vocabDatabaseSchema = vocabularySchema,
+    outputPath = aresDataRoot,
   )
   
   

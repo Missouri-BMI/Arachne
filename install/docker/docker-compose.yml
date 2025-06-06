@@ -20,7 +20,7 @@ services:
     environment:
       POSTGRES_USER: ohdsi-user
       POSTGRES_PASSWORD: ohdsi-password
-      
+
   # Execution Engine
   arachne-execution-engine:
     image: odysseusinc/execution_engine:2.7.1
@@ -100,6 +100,20 @@ services:
       - pgadmin-data:/var/lib/pgadmin
     depends_on:
       - arachne-datanode-postgres
+
+  ares:
+    build:
+      context: ../../Ares
+      dockerfile: Dockerfile
+    image: ohdsi-ares
+    container_name: ohdsi-ares
+    ports:
+      - "80:80"
+    volumes:
+      - ./ares_data:/usr/share/nginx/html/ares/data
+    networks:
+      - arachne-network
+    restart: unless-stopped
 
 # Volumes for the services
 volumes:
