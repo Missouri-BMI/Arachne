@@ -9,7 +9,7 @@ services:
     logging:
       options:
         max-size: 100m
-    shm_size: "4g"
+    shm_size: "16g"
     networks:
       - arachne-network
     ports:
@@ -20,7 +20,7 @@ services:
     environment:
       POSTGRES_USER: ohdsi-user
       POSTGRES_PASSWORD: ohdsi-password
-
+      
   # Execution Engine
   arachne-execution-engine:
     image: odysseusinc/execution_engine:2.7.1

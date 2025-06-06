@@ -1,7 +1,7 @@
 options(connectionObserver = NULL)
 options(useFancyQuotes = FALSE)
 
-
+remotes::install_github(repo = 'OHDSI/Achilles', ref='develop')
 
 aresDataRoot <- "./ares_data/"
 dbms <- "postgresql"
@@ -13,6 +13,7 @@ pathToDriver <-  "./drivers/"
 vocabFileLoc      <- "./vocabulary_download_v5"
 syntheaExecutable <- "./synthea-with-dependencies.jar"
 syntheaOutputDirectory <- "./output/" 
+
 
 
 DatabaseConnector::downloadJdbcDrivers(dbms, pathToDriver = pathToDriver)
@@ -37,9 +38,9 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 populationSize <- 100
 
 simulatedSources <- list(
-  list(abbreviation="MU", sourceName="University of Missouri", geographySpecification="Missouri", population=populationSize),
-  list(abbreviation="WASHU", sourceName="Washington University in St. Louis", geographySpecification="Missouri", population=populationSize)
-#   list(abbreviation="KUMC", sourceName="University of Kansas Medical Center", geographySpecification="Kansas", population=populationSize),
+  list(abbreviation="MU", sourceName="University of Missouri", geographySpecification="Missouri", population=populationSize)
+#   list(abbreviation="KUMC", sourceName="University of Kansas Medical Center", geographySpecification="Kansas", population=1000),
+#   list(abbreviation="WASHU", sourceName="Washington University in St. Louis", geographySpecification="Missouri", population=1000)
 #   list(abbreviation="MCW", sourceName="Medical College of Wisconsin", geographySpecification="Wisconsin", population=populationSize),
 #   list(abbreviation="UIOWA", sourceName="University of Iowa", geographySpecification="Iowa", population=populationSize) 
 )
@@ -85,8 +86,12 @@ for (simulatedSource in simulatedSources) {
     cdmVersion = cdmVersion
   )
   
-   #Load the native data into the CDM
-  ETLSyntheaBuilder::LoadVocabFromCsv(connectionDetails, vocabularySchema, vocabFileLoc)
+  # Load the native data into the CDM
+  ETLSyntheaBuilder::LoadVocabFromCsv(
+    connectionDetails,
+    vocabularySchema,
+    vocabFileLoc
+    ) 
 
   # create & load the simulated synthea data - this is our native data
   ETLSyntheaBuilder::CreateSyntheaTables(
@@ -101,6 +106,21 @@ for (simulatedSource in simulatedSources) {
     syntheaFileLoc = syntheaFileLoc
   )
   
+  ETLSyntheaBuilder::CreateMapAndRollupTables(
+    connectionDetails = connectionDetails, 
+    cdmSchema = cdmDatabaseSchema, 
+    syntheaSchema = nativeSchema, 
+    cdmVersion = cdmVersion, 
+    syntheaVersion = syntheaVersion
+  )
+  
+  ## Optional Step to create extra indices
+  ETLSyntheaBuilder::CreateExtraIndices(
+    connectionDetails = connectionDetails, 
+    cdmSchema = cdmDatabaseSchema, 
+    syntheaSchema = nativeSchema, 
+    syntheaVersion = syntheaVersion
+  )
   
   # run our ETL to create the CDM
   ETLSyntheaBuilder::LoadEventTables(
@@ -138,14 +158,15 @@ for (simulatedSource in simulatedSources) {
     outputFolder = datasourceReleaseOutputFolder
   )
   
-  # export the results
-  Achilles::exportAO(
+  # Export Achilles results to Ares supported format
+  Achilles::exportToAres(
     connectionDetails = connectionDetails,
     cdmDatabaseSchema = cdmDatabaseSchema,
     resultsDatabaseSchema = resultsDatabaseSchema,
-    vocabDatabaseSchema = vocabularySchema,
-    outputPath = aresDataRoot
+    vocabDatabaseSchema = vocabDatabaseSchema,
+    outputPath = aresDataDirectory,
   )
+  
   
   # perform temporal characterization
   outputFile <- file.path(datasourceReleaseOutputFolder, "temporal-characterization.csv")
