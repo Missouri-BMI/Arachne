@@ -32,6 +32,7 @@ services:
       - arachne-network
     ports:
       - "127.0.0.1:8888:8888"  # Port mapping (host:container)
+      - "127.0.0.1:9999:9999"  # Port mapping (host:container)
     volumes:
       - /tmp:/tmp
       - /var/run/docker.sock:/var/run/docker.sock
@@ -45,7 +46,8 @@ services:
       - RUNTIMESERVICE_DIST_VERBOSE_LOG=true
       - RUNTIMESERVICE_DIST_ARCHIVEFOLDER=/runtimes/
       - RUNTIMESERVICE_DIST_DEFAULTDESCRIPTORFILE=descriptor_base.json
-
+    env_file:
+      - query-exec.env  # Environment variables file
     # Arachne Central (Community Edition)
   arachne-central:
     image: odysseusinc/arachne-central-ce:latest
