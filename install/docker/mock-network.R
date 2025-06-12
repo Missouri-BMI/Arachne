@@ -38,11 +38,12 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
 populationSize <- 100
 
 simulatedSources <- list(
-  list(abbreviation="MU", sourceName="University of Missouri", geographySpecification="Missouri", population=200),
-  list(abbreviation="KUMC", sourceName="University of Kansas Medical Center", geographySpecification="Kansas", population=500),
-  list(abbreviation="WASHU", sourceName="Washington University in St. Louis", geographySpecification="Missouri", population=490),
-  list(abbreviation="MCW", sourceName="Medical College of Wisconsin", geographySpecification="Wisconsin", population=300),
-  list(abbreviation="UIOWA", sourceName="University of Iowa", geographySpecification="Iowa", population=200) 
+  list(abbreviation="MU", sourceName="University of Missouri", geographySpecification="Missouri", population=populationSize),
+  list(abbreviation="KUMC", sourceName="University of Kansas Medical Center", geographySpecification="Kansas", population=populationSize),
+  list(abbreviation="WASHU", sourceName="Washington University in St. Louis", geographySpecification="Missouri", population=populationSize)
+  # ,
+  # list(abbreviation="MCW", sourceName="Medical College of Wisconsin", geographySpecification="Wisconsin", population=populationSize),
+  # list(abbreviation="UIOWA", sourceName="University of Iowa", geographySpecification="Iowa", population=populationSize) 
 )
 
 

@@ -105,7 +105,7 @@ services:
 
   ares:
     build:
-      context: ../../Ares
+      context: ../../../Ares
       dockerfile: Dockerfile
     image: ohdsi-ares
     container_name: ohdsi-ares
