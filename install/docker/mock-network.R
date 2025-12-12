@@ -35,12 +35,12 @@ connectionDetails <- DatabaseConnector::createConnectionDetails(
   pathToDriver = pathToDriver
 )
 
-populationSize <- 100
+populationSize <- 1000
 
 simulatedSources <- list(
   list(abbreviation="MU", sourceName="University of Missouri", geographySpecification="Missouri", population=populationSize)
-  #, list(abbreviation="KUMC", sourceName="University of Kansas Medical Center", geographySpecification="Kansas", population=populationSize)
-  #, list(abbreviation="WASHU", sourceName="Washington University in St. Louis", geographySpecification="Missouri", population=populationSize)
+  , list(abbreviation="UMKC", sourceName="University of Missouri Kansas City", geographySpecification="Kansas", population=populationSize)
+  , list(abbreviation="WASHU", sourceName="Washington University in St. Louis", geographySpecification="Missouri", population=populationSize)
   # ,
   # list(abbreviation="MCW", sourceName="Medical College of Wisconsin", geographySpecification="Wisconsin", population=populationSize),
   # list(abbreviation="UIOWA", sourceName="University of Iowa", geographySpecification="Iowa", population=populationSize) 

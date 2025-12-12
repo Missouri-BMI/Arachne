@@ -1,0 +1,26 @@
+DBMS:
+postgresql
+
+Error:
+org.postgresql.util.PSQLException: ERROR: syntax error at end of input
+  Position: 36
+
+SQL:
+drop index cdm_washu_20251009_0855.
+
+R version:
+R version 4.5.0 (2025-04-11)
+
+Platform:
+aarch64-apple-darwin20
+
+Attached base packages:
+- stats
+- graphics
+- grDevices
+- utils
+- datasets
+- methods
+- base
+
+Other attached packages:
